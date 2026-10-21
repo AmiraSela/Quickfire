@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#edf3f2">
+	<title>Quickfire | A little test of your world</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+		:root {
+			color-scheme: light;
+			--paper: #edf3f2;
+			--ink: #183332;
+			--muted: #657775;
+			--line: #cad8d5;
+			--blue: #2858cf;
+			--coral: #ef684b;
+			--lime: #d8ef72;
+			--white: #fbfdfb;
+			--mono: "DM Mono", "Courier New", monospace;
+			--sans: "Manrope", "Trebuchet MS", sans-serif;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			color: var(--ink);
+			background-color: var(--paper);
+			background-image: linear-gradient(rgba(24, 51, 50, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 51, 50, .035) 1px, transparent 1px);
+			background-size: 32px 32px;
+			font-family: var(--sans);
+		}
+
+		button { font: inherit; }
+
+		.shell { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+
+		.topbar {
+			height: 78px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.brand { display: flex; align-items: center; gap: 11px; font-size: 15px; font-weight: 800; letter-spacing: 0; }
+		.brand-mark { display: grid; width: 29px; height: 29px; place-items: center; background: var(--coral); color: var(--white); font-size: 17px; transform: rotate(-7deg); }
+		.edition { color: var(--muted); font: 11px var(--mono); text-transform: uppercase; letter-spacing: 0; }
+
+		main {
+			display: grid;
+			grid-template-columns: minmax(220px, .7fr) minmax(0, 1.6fr);
+			gap: clamp(42px, 8vw, 112px);
+			padding: clamp(42px, 7vh, 80px) 0 50px;
+			animation: arrive .55s ease-out both;
+		}
+
+		.intro { padding-top: 7px; }
+		.eyebrow { color: var(--blue); font: 11px var(--mono); text-transform: uppercase; letter-spacing: 0; }
+		h1 { max-width: 330px; margin: 19px 0 20px; font-size: clamp(39px, 5vw, 60px); line-height: 1.04; letter-spacing: 0; }
+		.intro-copy { max-width: 280px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+
+		.score-strip { display: flex; gap: 28px; margin-top: 47px; padding-top: 18px; border-top: 1px solid var(--line); }
+		.score-item { display: grid; gap: 6px; }
+		.score-value { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+		.score-label { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+
+		.quiz { min-width: 0; }
+		.quiz-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+		.step-label, .category { font: 11px var(--mono); text-transform: uppercase; }
+		.step-label { color: var(--muted); }
+		.category { color: var(--blue); }
+		.progress-track { height: 4px; overflow: hidden; background: #d7e1df; }
+		.progress-fill { width: 12.5%; height: 100%; background: var(--blue); transition: width .35s ease; }
+
+		.question { margin: 28px 0 22px; font-size: clamp(25px, 3.3vw, 39px); line-height: 1.28; letter-spacing: 0; }
+		.answers { display: grid; border-top: 1px solid var(--line); }
+		.answer {
+			display: grid;
+			grid-template-columns: 34px 1fr 22px;
+			align-items: center;
+			gap: 12px;
+			min-height: 62px;
+			padding: 12px 13px 12px 3px;
+			border: 0;
+			border-bottom: 1px solid var(--line);
+			color: var(--ink);
+			background: transparent;
+			text-align: left;
+			cursor: pointer;
+			transition: background .16s ease, padding .16s ease;
+		}
+		.answer:hover:not(:disabled) { padding-left: 12px; background: rgba(255, 255, 255, .56); }
+		.answer:focus-visible, .next:focus-visible, .restart:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+		.answer:disabled { cursor: default; }
+		.answer-key { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid #afc1bd; color: var(--muted); font: 11px var(--mono); }
+		.answer-text { font-size: 15px; font-weight: 600; line-height: 1.45; }
+		.answer-icon { color: transparent; font-size: 18px; }
+		.answer.correct { background: rgba(216, 239, 114, .38); }
+		.answer.correct .answer-key { border-color: var(--ink); background: var(--lime); color: var(--ink); }
+		.answer.correct .answer-icon { color: var(--ink); }
+		.answer.incorrect { background: rgba(239, 104, 75, .11); }
+		.answer.incorrect .answer-key { border-color: var(--coral); color: #b83d26; }
+		.answer.incorrect .answer-icon { color: var(--coral); }
+
+		.feedback { min-height: 46px; padding: 12px 0 7px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+		.feedback strong { color: var(--ink); }
+		.quiz-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 10px; }
+		.hint { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+		.next, .restart {
+			min-height: 46px;
+			padding: 0 18px;
+			border: 0;
+			color: white;
+			background: var(--blue);
+			font-size: 13px;
+			font-weight: 700;
+			cursor: pointer;
+			transition: background .16s ease, transform .16s ease;
+		}
+		.next:hover:not(:disabled), .restart:hover { background: #1d43a6; transform: translateY(-1px); }
+		.next:disabled { background: #aab9b6; cursor: not-allowed; }
+		.result-mark { display: inline-grid; width: 42px; height: 42px; place-items: center; margin-bottom: 12px; background: var(--lime); font-size: 22px; }
+		.result-kicker { color: var(--blue); font: 11px var(--mono); text-transform: uppercase; }
+		.result-title { margin: 14px 0 10px; font-size: clamp(34px, 5vw, 52px); line-height: 1.1; }
+		.result-copy { max-width: 480px; margin: 0 0 28px; color: var(--muted); font-size: 15px; line-height: 1.8; }
+		.result-score { display: flex; align-items: baseline; gap: 10px; margin: 24px 0 30px; padding: 18px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+		.result-score strong { font-size: 48px; font-variant-numeric: tabular-nums; }
+		.result-score span { color: var(--muted); font: 11px var(--mono); text-transform: uppercase; }
+		[hidden] { display: none !important; }
+
+		@keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+		@media (max-width: 720px) {
+			.shell { width: min(100% - 36px, 560px); }
+			.topbar { height: 66px; }
+			main { grid-template-columns: 1fr; gap: 30px; padding: 32px 0 44px; }
+			h1 { max-width: 420px; margin: 12px 0 12px; font-size: 40px; }
+			.intro-copy { max-width: 420px; }
+			.score-strip { display: none; }
+			.question { margin-top: 27px; }
+			.answer { min-height: 61px; }
+			.edition { font-size: 9px; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+		}
+	</style>
+</head>
+<body>
+	<div class="shell">
+		<header class="topbar">
+			<div class="brand"><span class="brand-mark" aria-hidden="true">?</span><span>QUICKFIRE</span></div>
+			<span class="edition">A pocket-sized quiz · No. 01</span>
+		</header>
+
+		<main>
+			<aside class="intro" aria-label="Quiz introduction">
+				<div class="eyebrow">Eight questions. One curious mind.</div>
+				<h1>A little test of your world.</h1>
+				<p class="intro-copy">A quick mix of science, places, words, and the unexpected. Pick your best answer and see where curiosity takes you.</p>
+				<div class="score-strip" aria-label="Your score so far">
+					<div class="score-item"><span class="score-value" id="score-display">0</span><span class="score-label">Correct</span></div>
+					<div class="score-item"><span class="score-value" id="answered-display">0 / 8</span><span class="score-label">Answered</span></div>
+				</div>
+			</aside>
+
+			<section class="quiz" aria-label="Quickfire quiz">
+				<div id="question-view" aria-live="polite">
+					<div class="quiz-top"><span class="step-label" id="step-label">Question 01 / 08</span><span class="category" id="category">Science</span></div>
+					<div class="progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
+					<h2 class="question" id="question">Which planet has the most moons confirmed so far?</h2>
+					<div class="answers" id="answers"></div>
+					<div class="feedback" id="feedback" aria-live="polite"></div>
+					<div class="quiz-footer">
+						<span class="hint">Choose one answer</span>
+						<button class="next" id="next-button" type="button" disabled>Next question <span aria-hidden="true">→</span></button>
+					</div>
+				</div>
+				<section id="result-view" aria-live="polite" hidden>
+					<span class="result-mark" aria-hidden="true">✳</span>
+					<div class="result-kicker">That's a wrap</div>
+					<h2 class="result-title" id="result-title">Nicely done.</h2>
+					<p class="result-copy" id="result-copy"></p>
+					<div class="result-score"><strong id="final-score">0 / 8</strong><span>correct answers</span></div>
+					<button class="restart" id="restart-button" type="button">Play again <span aria-hidden="true">↻</span></button>
+				</section>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		const questions = [
+			{ category: "Science", prompt: "Which planet has the most moons confirmed so far?", choices: ["Jupiter", "Saturn", "Neptune", "Uranus"], answer: 1, fact: "Saturn currently leads, with more than 140 confirmed moons." },
+			{ category: "Geography", prompt: "Which country is home to the ancient city of Petra?", choices: ["Egypt", "Jordan", "Lebanon", "Morocco"], answer: 1, fact: "Petra was the capital of the Nabataean kingdom in what is now Jordan." },
+			{ category: "Words", prompt: "What is the dot over a lowercase i or j called?", choices: ["A tittle", "A diacritic", "A cedilla", "A macron"], answer: 0, fact: "That tiny dot has a name: a tittle. The word also refers to a small stroke in writing." },
+			{ category: "Nature", prompt: "Which animal has fingerprints remarkably similar to humans?", choices: ["Koala", "Giant panda", "Red fox", "Sloth"], answer: 0, fact: "Koala fingerprints are so similar to ours that they can be difficult to tell apart at a glance." },
+			{ category: "Art & Design", prompt: "Which artist painted the ceiling of the Sistine Chapel?", choices: ["Raphael", "Donatello", "Michelangelo", "Leonardo da Vinci"], answer: 2, fact: "Michelangelo painted the famous ceiling between 1508 and 1512." },
+			{ category: "Food", prompt: "Where did the croissant as we know it become popular?", choices: ["France", "Austria", "Italy", "Belgium"], answer: 0, fact: "Its story has Austrian roots, but the flaky, crescent-shaped pastry became a French icon." },
+			{ category: "Space", prompt: "What is the closest star to Earth after the Sun?", choices: ["Sirius", "Proxima Centauri", "Vega", "Alpha Centauri A"], answer: 1, fact: "Proxima Centauri is about 4.24 light-years away and is part of the Alpha Centauri system." },
+			{ category: "The Unexpected", prompt: "What is the only mammal capable of true, sustained flight?", choices: ["Flying squirrel", "Sugar glider", "Bat", "Colugo"], answer: 2, fact: "Bats generate lift with powered wingbeats. The other choices glide rather than fly under their own power." }
+		];
+
+		const answerLetters = ["A", "B", "C", "D"];
+		let currentQuestion = 0;
+		let score = 0;
+		let hasAnswered = false;
+
+		const questionView = document.querySelector("#question-view");
+		const resultView = document.querySelector("#result-view");
+		const answersElement = document.querySelector("#answers");
+		const nextButton = document.querySelector("#next-button");
+
+		function renderQuestion() {
+			const item = questions[currentQuestion];
+			hasAnswered = false;
+			document.querySelector("#step-label").textContent = `Question ${String(currentQuestion + 1).padStart(2, "0")} / ${String(questions.length).padStart(2, "0")}`;
+			document.querySelector("#category").textContent = item.category;
+			document.querySelector("#question").textContent = item.prompt;
+			document.querySelector("#feedback").textContent = "";
+			nextButton.disabled = true;
+			nextButton.innerHTML = currentQuestion === questions.length - 1 ? "See your results <span aria-hidden=\"true\">→</span>" : "Next question <span aria-hidden=\"true\">→</span>";
+			const progress = document.querySelector(".progress-track");
+			progress.setAttribute("aria-valuenow", String(currentQuestion));
+			document.querySelector("#progress-fill").style.width = `${(currentQuestion / questions.length) * 100}%`;
+			answersElement.replaceChildren(...item.choices.map((choice, index) => {
+				const button = document.createElement("button");
+				button.className = "answer";
+				button.type = "button";
+				button.innerHTML = `<span class="answer-key">${answerLetters[index]}</span><span class="answer-text"></span><span class="answer-icon" aria-hidden="true"></span>`;
+				button.querySelector(".answer-text").textContent = choice;
+				button.addEventListener("click", () => selectAnswer(index));
+				return button;
+			}));
+		}
+
+		function selectAnswer(selectedIndex) {
+			if (hasAnswered) return;
+			hasAnswered = true;
+			const item = questions[currentQuestion];
+			const buttons = [...answersElement.querySelectorAll(".answer")];
+			buttons.forEach((button, index) => {
+				button.disabled = true;
+				if (index === item.answer) {
+					button.classList.add("correct");
+					button.querySelector(".answer-icon").textContent = "✓";
+				}
+				if (index === selectedIndex && selectedIndex !== item.answer) {
+					button.classList.add("incorrect");
+					button.querySelector(".answer-icon").textContent = "×";
+				}
+			});
+			const isCorrect = selectedIndex === item.answer;
+			if (isCorrect) score += 1;
+			document.querySelector("#score-display").textContent = String(score);
+			document.querySelector("#answered-display").textContent = `${currentQuestion + 1} / ${questions.length}`;
+			document.querySelector("#feedback").innerHTML = `<strong>${isCorrect ? "That's right." : "Not quite."}</strong> ${item.fact}`;
+			nextButton.disabled = false;
+			nextButton.focus();
+		}
+
+		function showResults() {
+			questionView.hidden = true;
+			resultView.hidden = false;
+			document.querySelector("#final-score").textContent = `${score} / ${questions.length}`;
+			const percentage = score / questions.length;
+			document.querySelector("#result-title").textContent = percentage === 1 ? "A perfect round." : percentage >= .625 ? "Nicely done." : percentage >= .375 ? "Curiosity looks good on you." : "Every answer is a new fact.";
+			document.querySelector("#result-copy").textContent = percentage === 1
+				? "Eight for eight. Your curiosity is in excellent shape. Ready to see if you can do it twice?"
+				: `You got ${score} of ${questions.length} right. A few new facts for the road, and plenty more to discover on your next round.`;
+		}
+
+		nextButton.addEventListener("click", () => {
+			if (!hasAnswered) return;
+			if (currentQuestion === questions.length - 1) {
+				showResults();
+				return;
+			}
+			currentQuestion += 1;
+			renderQuestion();
+			document.querySelector("#question").focus({ preventScroll: true });
+		});
+
+		document.querySelector("#restart-button").addEventListener("click", () => {
+			currentQuestion = 0;
+			score = 0;
+			document.querySelector("#score-display").textContent = "0";
+			document.querySelector("#answered-display").textContent = `0 / ${questions.length}`;
+			resultView.hidden = true;
+			questionView.hidden = false;
+			renderQuestion();
+		});
+
+		renderQuestion();
+	</script>
+</body>
+</html>
